@@ -1,4 +1,4 @@
-package net.mcviral.dev.plugins.pvpcontrol.pvp;
+package net.mcviral.dev.plugins.pvpcontrol.main;
 
 import java.util.UUID;
 
