@@ -22,6 +22,14 @@ public class PVPControl extends JavaPlugin{
 		
 	}
 	
+	public void startup(){
+		
+	}
+	
+	public void shutdown(){
+		
+	}
+	
 	public GangController getGangController(){
 		return gangcontroller;
 	}

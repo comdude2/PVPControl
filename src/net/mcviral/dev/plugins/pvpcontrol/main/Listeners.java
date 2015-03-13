@@ -47,6 +47,8 @@ public class Listeners implements Listener{
 		}
 	}
 	
+	//CHECK BOTH FOR GANG AND MEMBER PVP OFF
+	
 	@SuppressWarnings("unused")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPotionSplash(PotionSplashEvent event){
