@@ -5,11 +5,22 @@ import java.util.UUID;
 public class Member {
 	
 	private UUID uuid = null;
-	private String name = null;
 	private boolean globalpvp = true;
 	
-	public Member(){
-		
+	public Member(UUID uuid){
+		this.uuid = uuid;
+	}
+	
+	public UUID getUUID(){
+		return uuid;
+	}
+	
+	public boolean getGlobalPVP(){
+		return globalpvp;
+	}
+	
+	public void setGlobalPVP(boolean state){
+		globalpvp = state;
 	}
 	
 }
