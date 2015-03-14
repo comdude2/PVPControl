@@ -12,10 +12,15 @@ import net.mcviral.dev.plugins.pvpcontrol.util.FileManager;
 public class GangController {
 	
 	private PVPControl plugin = null;
-	private LinkedList <Gang> gangs = new LinkedList <Gang> ();
+	private LinkedList <Gang> gangs = null;
 	
 	public GangController(PVPControl pvp){
 		plugin = pvp;
+		gangs = new LinkedList <Gang> ();
+	}
+	
+	public void clearGangs(){
+		gangs = null;
 	}
 	
 	public void loadGangs(){

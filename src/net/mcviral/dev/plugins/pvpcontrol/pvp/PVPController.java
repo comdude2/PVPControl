@@ -10,10 +10,11 @@ public class PVPController {
 	
 	@SuppressWarnings("unused")
 	private PVPControl plugin = null;
-	private LinkedList <Member> members = new LinkedList <Member> ();
+	private LinkedList <Member> members = null;
 	
 	public PVPController(PVPControl plugin){
 		this.plugin = plugin;
+		members = new LinkedList <Member> ();
 	}
 
 	public LinkedList <Member> getMembers() {
