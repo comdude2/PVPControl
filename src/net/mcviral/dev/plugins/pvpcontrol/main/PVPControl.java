@@ -3,6 +3,7 @@ package net.mcviral.dev.plugins.pvpcontrol.main;
 import net.mcviral.dev.plugins.pvpcontrol.gangs.GangController;
 import net.mcviral.dev.plugins.pvpcontrol.points.PointsController;
 import net.mcviral.dev.plugins.pvpcontrol.pvp.PVPController;
+import net.mcviral.dev.plugins.pvpcontrol.pvp.PVPTask;
 import net.mcviral.dev.plugins.pvpcontrol.util.Log;
 import net.md_5.bungee.api.ChatColor;
 
@@ -46,6 +47,7 @@ public class PVPControl extends JavaPlugin{
 		gangcontroller.saveGangs();
 		gangcontroller.clearGangs();
 		pvpcontroller.setMembers(null);
+		this.getServer().getScheduler().cancelTasks(this);
 	}
 	
 	public GangController getGangController(){
@@ -72,13 +74,70 @@ public class PVPControl extends JavaPlugin{
 		return false;
 	}
 	
-	public void help(CommandSender sender){
+	public void helpPVP(CommandSender sender){
+		
+	}
+	
+	public void helpPoints(CommandSender sender){
+		
+	}
+
+	public void helpGang(CommandSender sender){
 		
 	}
 	
 	private boolean pvp(CommandSender sender, Command cmd, String label, String[] args){
 		if (sender.hasPermission("pvp.use")){
-			
+			if (sender instanceof Player){
+				Player p = (Player) sender;
+				if (args.length > 0){
+					if (args.length == 1){
+						if (args[0].equalsIgnoreCase("off") || args[0].equalsIgnoreCase("on")){
+							boolean state = false;
+							String sstate = null;
+							if (args[0].equalsIgnoreCase("off")){
+								state = false;
+								sstate = "off";
+							}else if (args[0].equalsIgnoreCase("on")){
+								state = true;
+								sstate = "on";
+							}else{
+								//Error
+								return true;
+							}
+							Member m = pvpcontroller.getMember(p.getUniqueId());
+							if (m != null){
+								if (m.getGlobalPVP() == state){
+									//They already have pvp off, the dumb pricks
+									sender.sendMessage(ChatColor.RED + "You already have pvp " + sstate);
+									return true;
+								}else{
+									//Change the state
+									if (m.hasATaskRunningTask()){
+										//They're waiting for one.
+										sender.sendMessage(ChatColor.RED + "You're already turning pvp " + sstate + ", you can't change your mind now.");
+										return true;
+									}else{
+										PVPTask task = new PVPTask(m, state);
+										m.setTask(task);
+										this.getServer().getScheduler().scheduleSyncDelayedTask(this, task, 20 * 30L);
+										sender.sendMessage(ChatColor.GREEN + "Your pvp will turn " + sstate + " in 30 seconds...");
+										return true;
+									}
+								}
+							}else{
+								//Problem
+							}
+						}else{
+							helpPVP(sender);
+						}
+					}else{
+						helpPVP(sender);
+					}
+				}else{
+					helpPVP(sender);
+				}
+			}
 		}else{
 			sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");
 		}
@@ -86,10 +145,36 @@ public class PVPControl extends JavaPlugin{
 	}
 	
 	private boolean points(CommandSender sender, Command cmd, String label, String[] args){
+		if (sender.hasPermission("points.use")){
+			if (args.length > 0){
+				if (args.length == 1){
+					
+				}else{
+					helpPVP(sender);
+				}
+			}else{
+				helpPVP(sender);
+			}
+		}else{
+			sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");
+		}
 		return false;
 	}
 	
 	private boolean gang(CommandSender sender, Command cmd, String label, String[] args){
+		if (sender.hasPermission("gang.use")){
+			if (args.length > 0){
+				if (args.length == 1){
+					
+				}else{
+					helpPVP(sender);
+				}
+			}else{
+				helpPVP(sender);
+			}
+		}else{
+			sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");
+		}
 		return false;
 	}
 	
