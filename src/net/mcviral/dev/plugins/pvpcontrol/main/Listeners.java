@@ -1,5 +1,6 @@
 package net.mcviral.dev.plugins.pvpcontrol.main;
 
+import net.mcviral.dev.plugins.pvpcontrol.gangs.Gang;
 import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.entity.LivingEntity;
@@ -10,14 +11,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.plugin.Plugin;
 
 public class Listeners implements Listener{
 	
-	@SuppressWarnings("unused")
-	private Plugin plugin = null;
+	private PVPControl plugin = null;
 	
-	public Listeners(Plugin plugin){
+	public Listeners(PVPControl plugin){
 		this.plugin = plugin;
 	}
 	
@@ -52,20 +51,52 @@ public class Listeners implements Listener{
 	@SuppressWarnings("unused")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPotionSplash(PotionSplashEvent event){
+		boolean allow = true;
 		if (event.getEntity().getShooter() instanceof Player){
 			Player atk = (Player) event.getEntity().getShooter();
 			Player vic = null;
 			for (LivingEntity e : event.getAffectedEntities()){
 				if (e instanceof Player){
 					vic = (Player) e;
-					
+					allow = allowPVP(vic, atk);
 				}
 			}
 		}
 	}
 	
 	public boolean allowPVP(Player vic, Player atk){
-		
+		//Check global pvp then gang pvp
+		if (plugin.getPVPController().isAMember(atk.getUniqueId())){
+			Member matk = plugin.getPVPController().getMember(atk.getUniqueId());
+			if (matk.getGlobalPVP()){
+				if (plugin.getPVPController().isAMember(vic.getUniqueId())){
+					Member mvic = plugin.getPVPController().getMember(vic.getUniqueId());
+					if (mvic.getGlobalPVP()){
+						return true;
+					}//PVP off
+				}else{
+					return true;
+				}
+			}//PVP off
+		}
+		//Check gang
+		Gang gatk = plugin.getGangController().getGang(atk.getUniqueId());
+		Gang gvic = plugin.getGangController().getGang(vic.getUniqueId());
+		if ((gatk != null) && (gvic != null)){
+			//They are both in gangs
+			if (gatk == gvic){
+				if (gatk.allowsFriendlyfire()){
+					//Allowed
+					return true;
+				}else{
+					//PVP off
+				}
+			}else{
+				return true;
+			}
+		}else{
+			return true;
+		}
 		return false;
 	}
 	
