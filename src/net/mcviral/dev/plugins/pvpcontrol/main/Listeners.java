@@ -11,6 +11,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class Listeners implements Listener{
 	
@@ -18,6 +20,20 @@ public class Listeners implements Listener{
 	
 	public Listeners(PVPControl plugin){
 		this.plugin = plugin;
+	}
+	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onPlayerJoin(PlayerJoinEvent event){
+		plugin.getPVPController().getMembers().add(new Member(event.getPlayer().getUniqueId()));
+	}
+	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onPlayerQuit(PlayerQuitEvent event){
+		for (Member m : plugin.getPVPController().getMembers()){
+			if (m.getUUID().equals(event.getPlayer().getUniqueId())){
+				plugin.getPVPController().getMembers().remove(m);
+			}
+		}
 	}
 	
 	@EventHandler(priority = EventPriority.HIGH)
@@ -48,12 +64,13 @@ public class Listeners implements Listener{
 	
 	//CHECK BOTH FOR GANG AND MEMBER PVP OFF
 	
-	@SuppressWarnings("unused")
+	//@SuppressWarnings("unused")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPotionSplash(PotionSplashEvent event){
 		boolean allow = true;
+		Player atk = null;
 		if (event.getEntity().getShooter() instanceof Player){
-			Player atk = (Player) event.getEntity().getShooter();
+			atk = (Player) event.getEntity().getShooter();
 			Player vic = null;
 			for (LivingEntity e : event.getAffectedEntities()){
 				if (e instanceof Player){
@@ -61,6 +78,10 @@ public class Listeners implements Listener{
 					allow = allowPVP(vic, atk);
 				}
 			}
+		}
+		if (!allow){
+			event.setCancelled(true);
+			atk.sendMessage(ChatColor.RED + "One or more of the players you hit has PVP off, you aren't allowed to damage them.");
 		}
 	}
 	

@@ -14,6 +14,14 @@ public class Gang {
 	public Gang(){
 		
 	}
+	
+	public Gang(String name, String tag, UUID leaderuuid, LinkedList <UUID> members, boolean friendlyfire){
+		this.name = name;
+		this.tag = tag;
+		this.leaderuuid = leaderuuid;
+		this.members = members;
+		this.friendlyfire = friendlyfire;
+	}
 
 	public String getName() {
 		return name;

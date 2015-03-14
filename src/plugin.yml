@@ -1,0 +1,10 @@
+name: PVPControl
+main: net.mcviral.dev.plugins.pvpcontrol.main.PVPControl
+version: 1.0
+author: comdude2
+commands:
+   pvp:
+      description: This is this plugin's main command.
+      usage: /<command> help
+      permission: pvp.use
+      permission-message: You don't have the required permission to perform this command.

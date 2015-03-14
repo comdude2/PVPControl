@@ -13,21 +13,30 @@ public class PVPControl extends JavaPlugin{
 	private GangController gangcontroller = null;
 	private PVPController pvpcontroller = null;
 	private PointsController pointscontroller = null;
+	private boolean loadedBefore = false;
+	private Listeners listeners = null;
 	
 	public void onEnable(){
-		
+		this.saveDefaultConfig();
+		listeners = new Listeners(this);
+		if (!loadedBefore){
+			this.getServer().getPluginManager().registerEvents(listeners, this);
+		}
+		startup();
+		log.info(this.getDescription().getName() + " Enabled!");
 	}
 	
 	public void onDisable(){
-		
+		shutdown();
+		log.info(this.getDescription().getName() + " Disabled!");
 	}
 	
 	public void startup(){
-		
+		gangcontroller.loadGangs();
 	}
 	
 	public void shutdown(){
-		
+		gangcontroller.saveGangs();
 	}
 	
 	public GangController getGangController(){

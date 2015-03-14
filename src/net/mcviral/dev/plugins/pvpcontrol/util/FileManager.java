@@ -70,6 +70,14 @@ public class FileManager {
 		}
 	}
 	
+	public boolean createFile(){
+		try{
+			return customConfigFile.createNewFile();
+		}catch(Exception e){
+			return false;
+		}
+	}
+	
 	public void delete(){
 		customConfigFile.delete();
 	}
