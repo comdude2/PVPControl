@@ -1,5 +1,7 @@
 package net.mcviral.dev.plugins.pvpcontrol.main;
 
+import java.util.List;
+
 import net.mcviral.dev.plugins.pvpcontrol.gangs.GangController;
 import net.mcviral.dev.plugins.pvpcontrol.points.PointsController;
 import net.mcviral.dev.plugins.pvpcontrol.pvp.PVPController;
@@ -31,6 +33,12 @@ public class PVPControl extends JavaPlugin{
 		if (!loadedBefore){
 			this.getServer().getPluginManager().registerEvents(listeners, this);
 		}
+		this.reloadConfig();
+		try{
+			debug = this.getConfig().getBoolean("debug");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		startup();
 		log.info(this.getDescription().getName() + " Enabled!");
 	}
@@ -52,6 +60,23 @@ public class PVPControl extends JavaPlugin{
 		gangcontroller.clearGangs();
 		pvpcontroller.setMembers(null);
 		this.getServer().getScheduler().cancelTasks(this);
+	}
+	
+	public boolean isBlacklistedWorld(String world){
+		this.reloadConfig();
+		List <String> worlds = null;
+		try{
+			worlds = this.getConfig().getStringList("blacklisted");
+		}catch(Exception e){
+			e.printStackTrace();
+			return false;
+		}
+		for (String w : worlds){
+			if (w.equalsIgnoreCase(world)){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public GangController getGangController(){

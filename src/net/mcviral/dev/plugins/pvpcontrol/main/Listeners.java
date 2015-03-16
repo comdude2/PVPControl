@@ -1,6 +1,7 @@
 package net.mcviral.dev.plugins.pvpcontrol.main;
 
 import net.mcviral.dev.plugins.pvpcontrol.gangs.Gang;
+import net.mcviral.dev.plugins.pvpcontrol.points.PointsPlayer;
 import net.mcviral.dev.plugins.pvpcontrol.pvp.Result;
 import net.md_5.bungee.api.ChatColor;
 
@@ -11,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -30,6 +32,11 @@ public class Listeners implements Listener{
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerJoin(PlayerJoinEvent event){
 		plugin.getPVPController().getMembers().add(new Member(event.getPlayer().getUniqueId()));
+		if (plugin.getPointsController().isOnFile(event.getPlayer().getUniqueId())){
+			plugin.getPointsController().loadPlayer(event.getPlayer().getUniqueId());
+		}else{
+			plugin.getPointsController().createPlayer(event.getPlayer().getUniqueId());
+		}
 	}
 	
 	@EventHandler(priority = EventPriority.NORMAL)
@@ -41,61 +48,75 @@ public class Listeners implements Listener{
 		}
 	}
 	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onPlayerDeath(PlayerDeathEvent event){
+		if (!plugin.isBlacklistedWorld(event.getEntity().getWorld().getName())){
+			if (event.getEntity().getKiller() instanceof Player){
+				Player p = (Player) event.getEntity().getKiller();
+				PointsPlayer pp = plugin.getPointsController().getPlayer(p.getUniqueId());
+				pp.setPoints(pp.getPoints() + 1);
+				p.sendMessage(ChatColor.GRAY + "You killed " + event.getEntity().getName());
+			}
+		}
+	}
+	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event){
-		Result r = null;
-		if (plugin.debug){
-			plugin.log.info("EntityDamageByEntityEvent called.");
-		}
-		boolean allow = true;
-		Player vic = null;
-		Player atk = null;
-		if (event.getEntity() instanceof Player){
-			vic = (Player) event.getEntity();
-			cancelTaskDueToHit(vic);
-			if (event.getDamager() instanceof Player){
-				atk = (Player) event.getDamager();
-				cancelTaskDueToHit(atk);
-				if (atk != vic){
-					r = allowPVP(vic, atk);
-					allow = r.isAllowed();
-					if (plugin.debug){
-						plugin.log.info("Allow PVP: " + allow);
-					}
-				}
-			}else if (event.getDamager() instanceof Projectile){
-				Projectile p = (Projectile) event.getDamager();
-				if (p.getShooter() instanceof Player){
-					atk = (Player) p.getShooter();
+		if (!plugin.isBlacklistedWorld(event.getEntity().getWorld().getName())){
+			Result r = null;
+			if (plugin.debug){
+				plugin.log.info("EntityDamageByEntityEvent called.");
+			}
+			boolean allow = true;
+			Player vic = null;
+			Player atk = null;
+			if (event.getEntity() instanceof Player){
+				vic = (Player) event.getEntity();
+				cancelTaskDueToHit(vic);
+				if (event.getDamager() instanceof Player){
+					atk = (Player) event.getDamager();
 					cancelTaskDueToHit(atk);
-					r = allowPVP(vic, atk);
-					allow = r.isAllowed();
-					if (plugin.debug){
-						plugin.log.info("Allow projectile PVP: " + allow);
+					if (atk != vic){
+						r = allowPVP(vic, atk);
+						allow = r.isAllowed();
+						if (plugin.debug){
+							plugin.log.info("Allow PVP: " + allow);
+						}
+					}
+				}else if (event.getDamager() instanceof Projectile){
+					Projectile p = (Projectile) event.getDamager();
+					if (p.getShooter() instanceof Player){
+						atk = (Player) p.getShooter();
+						cancelTaskDueToHit(atk);
+						r = allowPVP(vic, atk);
+						allow = r.isAllowed();
+						if (plugin.debug){
+							plugin.log.info("Allow projectile PVP: " + allow);
+						}
 					}
 				}
 			}
-		}
-		if (!allow){
-			event.setCancelled(true);
-			if (r != null){
-				if (r.getCause() != null){
-					if (r.getCause() == "ATK"){
-						atk.sendMessage(ChatColor.RED + "You have PVP off, turn it on to engage other players in combat.");
-					}else if (r.getCause() == "VIC"){
-						atk.sendMessage(ChatColor.RED + "This player has PVP off, you aren't allowed to damage them.");
-					}else if (r.getCause() == "GANG"){
-						atk.sendMessage(ChatColor.RED + "This player is in your gang and friendly fire is disabled.");
+			if (!allow){
+				event.setCancelled(true);
+				if (r != null){
+					if (r.getCause() != null){
+						if (r.getCause() == "ATK"){
+							atk.sendMessage(ChatColor.RED + "You have PVP off, turn it on to engage other players in combat.");
+						}else if (r.getCause() == "VIC"){
+							atk.sendMessage(ChatColor.RED + "This player has PVP off, you aren't allowed to damage them.");
+						}else if (r.getCause() == "GANG"){
+							atk.sendMessage(ChatColor.RED + "This player is in your gang and friendly fire is disabled.");
+						}else{
+							//Wut, why's it not normal?
+						}
 					}else{
-						//Wut, why's it not normal?
+						//No cause, wut?
 					}
 				}else{
-					//No cause, wut?
+					//Wut
 				}
-			}else{
-				//Wut
+				//atk.sendMessage(ChatColor.RED + "This player has PVP off, you aren't allowed to damage them.");
 			}
-			//atk.sendMessage(ChatColor.RED + "This player has PVP off, you aren't allowed to damage them.");
 		}
 	}
 	
@@ -104,25 +125,27 @@ public class Listeners implements Listener{
 	//@SuppressWarnings("unused")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPotionSplash(PotionSplashEvent event){
-		Result r = null;
-		boolean allow = true;
-		Player atk = null;
-		if (event.getEntity().getShooter() instanceof Player){
-			atk = (Player) event.getEntity().getShooter();
-			cancelTaskDueToHit(atk);
-			Player vic = null;
-			for (LivingEntity e : event.getAffectedEntities()){
-				if (e instanceof Player){
-					vic = (Player) e;
-					cancelTaskDueToHit(vic);
-					r = allowPVP(vic, atk);
-					allow = r.isAllowed();
+		if (!plugin.isBlacklistedWorld(event.getEntity().getWorld().getName())){
+			Result r = null;
+			boolean allow = true;
+			Player atk = null;
+			if (event.getEntity().getShooter() instanceof Player){
+				atk = (Player) event.getEntity().getShooter();
+				cancelTaskDueToHit(atk);
+				Player vic = null;
+				for (LivingEntity e : event.getAffectedEntities()){
+					if (e instanceof Player){
+						vic = (Player) e;
+						cancelTaskDueToHit(vic);
+						r = allowPVP(vic, atk);
+						allow = r.isAllowed();
+					}
 				}
 			}
-		}
-		if (!allow){
-			event.setCancelled(true);
-			atk.sendMessage(ChatColor.RED + "One or more of the players you hit has PVP off or is in your gang, you aren't allowed to damage them.");
+			if (!allow){
+				event.setCancelled(true);
+				atk.sendMessage(ChatColor.RED + "One or more of the players you hit has PVP off or is in your gang, you aren't allowed to damage them.");
+			}
 		}
 	}
 	

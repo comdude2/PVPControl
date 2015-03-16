@@ -1,0 +1,5 @@
+debug: true
+blacklisted:
+ - this
+ - customworld
+ - here
