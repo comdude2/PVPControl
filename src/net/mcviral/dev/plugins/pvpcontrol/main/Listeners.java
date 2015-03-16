@@ -47,12 +47,18 @@ public class Listeners implements Listener{
 				atk = (Player) event.getDamager();
 				if (atk != vic){
 					allow = allowPVP(vic, atk);
+					if (plugin.debug){
+						plugin.log.info("Allow PVP: " + allow);
+					}
 				}
 			}else if (event.getDamager() instanceof Projectile){
 				Projectile p = (Projectile) event.getDamager();
 				if (p.getShooter() instanceof Player){
 					atk = (Player) p.getShooter();
 					allow = allowPVP(vic, atk);
+					if (plugin.debug){
+						plugin.log.info("Allow projectile PVP: " + allow);
+					}
 				}
 			}
 		}

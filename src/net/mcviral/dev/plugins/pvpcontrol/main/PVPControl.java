@@ -20,10 +20,14 @@ public class PVPControl extends JavaPlugin{
 	private PointsController pointscontroller = null;
 	private boolean loadedBefore = false;
 	private Listeners listeners = null;
+	public boolean debug = true;
 	
 	public void onEnable(){
 		this.saveDefaultConfig();
 		listeners = new Listeners(this);
+		gangcontroller = new GangController(this);
+		pvpcontroller = new PVPController(this);
+		pointscontroller = new PointsController();
 		if (!loadedBefore){
 			this.getServer().getPluginManager().registerEvents(listeners, this);
 		}
@@ -65,11 +69,11 @@ public class PVPControl extends JavaPlugin{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("pvp")){
-			pvp(sender, cmd, label, args);
+			return pvp(sender, cmd, label, args);
 		}else if (cmd.getName().equalsIgnoreCase("points")){
-			points(sender, cmd, label, args);
+			return points(sender, cmd, label, args);
 		}else if (cmd.getName().equalsIgnoreCase("gang")){
-			gang(sender, cmd, label, args);
+			return gang(sender, cmd, label, args);
 		}
 		return false;
 	}
@@ -127,21 +131,28 @@ public class PVPControl extends JavaPlugin{
 								}
 							}else{
 								//Problem
+								return false;
 							}
 						}else{
 							helpPVP(sender);
+							return false;
 						}
 					}else{
 						helpPVP(sender);
+						return false;
 					}
 				}else{
 					helpPVP(sender);
+					return false;
 				}
+			}else{
+				sender.sendMessage(ChatColor.RED + "You need to be a player to perform this command.");
+				return false;
 			}
 		}else{
 			sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");
+			return false;
 		}
-		return false;
 	}
 	
 	private boolean points(CommandSender sender, Command cmd, String label, String[] args){

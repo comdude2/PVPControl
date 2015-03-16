@@ -8,3 +8,13 @@ commands:
       usage: /<command> help
       permission: pvp.use
       permission-message: You don't have the required permission to perform this command.
+   points:
+      description: This is this plugin's main command.
+      usage: /<command> help
+      permission: points.use
+      permission-message: You don't have the required permission to perform this command.
+   gang:
+      description: This is this plugin's main command.
+      usage: /<command> help
+      permission: gang.use
+      permission-message: You don't have the required permission to perform this command.
