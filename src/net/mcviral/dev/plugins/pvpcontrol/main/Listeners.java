@@ -1,6 +1,7 @@
 package net.mcviral.dev.plugins.pvpcontrol.main;
 
 import net.mcviral.dev.plugins.pvpcontrol.gangs.Gang;
+import net.mcviral.dev.plugins.pvpcontrol.pvp.Result;
 import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.entity.LivingEntity;
@@ -22,6 +23,10 @@ public class Listeners implements Listener{
 		this.plugin = plugin;
 	}
 	
+	//if (plugin.debug){
+		//plugin.log.info("");
+	//}
+	
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerJoin(PlayerJoinEvent event){
 		plugin.getPVPController().getMembers().add(new Member(event.getPlayer().getUniqueId()));
@@ -38,15 +43,22 @@ public class Listeners implements Listener{
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event){
+		Result r = null;
+		if (plugin.debug){
+			plugin.log.info("EntityDamageByEntityEvent called.");
+		}
 		boolean allow = true;
-		Player vic = (Player) event.getEntity();
+		Player vic = null;
 		Player atk = null;
 		if (event.getEntity() instanceof Player){
 			vic = (Player) event.getEntity();
+			cancelTaskDueToHit(vic);
 			if (event.getDamager() instanceof Player){
 				atk = (Player) event.getDamager();
+				cancelTaskDueToHit(atk);
 				if (atk != vic){
-					allow = allowPVP(vic, atk);
+					r = allowPVP(vic, atk);
+					allow = r.isAllowed();
 					if (plugin.debug){
 						plugin.log.info("Allow PVP: " + allow);
 					}
@@ -55,7 +67,9 @@ public class Listeners implements Listener{
 				Projectile p = (Projectile) event.getDamager();
 				if (p.getShooter() instanceof Player){
 					atk = (Player) p.getShooter();
-					allow = allowPVP(vic, atk);
+					cancelTaskDueToHit(atk);
+					r = allowPVP(vic, atk);
+					allow = r.isAllowed();
 					if (plugin.debug){
 						plugin.log.info("Allow projectile PVP: " + allow);
 					}
@@ -64,7 +78,24 @@ public class Listeners implements Listener{
 		}
 		if (!allow){
 			event.setCancelled(true);
-			atk.sendMessage(ChatColor.RED + "This player has PVP off, you aren't allowed to damage them.");
+			if (r != null){
+				if (r.getCause() != null){
+					if (r.getCause() == "ATK"){
+						atk.sendMessage(ChatColor.RED + "You have PVP off, turn it on to engage other players in combat.");
+					}else if (r.getCause() == "VIC"){
+						atk.sendMessage(ChatColor.RED + "This player has PVP off, you aren't allowed to damage them.");
+					}else if (r.getCause() == "GANG"){
+						atk.sendMessage(ChatColor.RED + "This player is in your gang and friendly fire is disabled.");
+					}else{
+						//Wut, why's it not normal?
+					}
+				}else{
+					//No cause, wut?
+				}
+			}else{
+				//Wut
+			}
+			//atk.sendMessage(ChatColor.RED + "This player has PVP off, you aren't allowed to damage them.");
 		}
 	}
 	
@@ -73,38 +104,84 @@ public class Listeners implements Listener{
 	//@SuppressWarnings("unused")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPotionSplash(PotionSplashEvent event){
+		Result r = null;
 		boolean allow = true;
 		Player atk = null;
 		if (event.getEntity().getShooter() instanceof Player){
 			atk = (Player) event.getEntity().getShooter();
+			cancelTaskDueToHit(atk);
 			Player vic = null;
 			for (LivingEntity e : event.getAffectedEntities()){
 				if (e instanceof Player){
 					vic = (Player) e;
-					allow = allowPVP(vic, atk);
+					cancelTaskDueToHit(vic);
+					r = allowPVP(vic, atk);
+					allow = r.isAllowed();
 				}
 			}
 		}
 		if (!allow){
 			event.setCancelled(true);
-			atk.sendMessage(ChatColor.RED + "One or more of the players you hit has PVP off, you aren't allowed to damage them.");
+			atk.sendMessage(ChatColor.RED + "One or more of the players you hit has PVP off or is in your gang, you aren't allowed to damage them.");
 		}
 	}
 	
-	public boolean allowPVP(Player vic, Player atk){
+	public void cancelTaskDueToHit(Player p){
+		Member m = plugin.getPVPController().getMember(p.getUniqueId());
+		if (m == null){
+			m = new Member(p.getUniqueId());
+			return;
+		}
+		if (m.hasATaskRunning()){
+			p.sendMessage(ChatColor.YELLOW + "Your PVP change has been canceled as you were hit.");
+			m.cancelTask();
+		}
+	}
+	
+	public Result allowPVP(Player vic, Player atk){
+		boolean allow = true;
+		String cause = null;
 		//Check global pvp then gang pvp
+		if (plugin.debug){
+			plugin.log.info("Atk: " + atk.getName() + " Vic: " + vic.getName());
+		}
 		if (plugin.getPVPController().isAMember(atk.getUniqueId())){
+			if (plugin.debug){
+				plugin.log.info("Attacker is registered as a member.");
+			}
 			Member matk = plugin.getPVPController().getMember(atk.getUniqueId());
 			if (matk.getGlobalPVP()){
+				if (plugin.debug){
+					plugin.log.info("Attacker's pvp is off");
+				}
 				if (plugin.getPVPController().isAMember(vic.getUniqueId())){
 					Member mvic = plugin.getPVPController().getMember(vic.getUniqueId());
 					if (mvic.getGlobalPVP()){
-						return true;
-					}//PVP off
+						if (plugin.debug){
+							plugin.log.info("Both players pvp is on");
+						}
+						allow = true;//erm, no
+					}else{
+						//PVP off
+						if (cause == null){
+							cause = "VIC";
+						}
+						allow = false;
+					}
 				}else{
-					return true;
+					allow = true;//erm, no
 				}
-			}//PVP off
+			}else{
+				//PVP off
+				if (cause == null){
+					cause = "ATK";
+				}
+				allow = false;
+			}
+		}else{
+			if (plugin.debug){
+				plugin.log.info("Woah, why is " + atk.getName() + " not registered as a member?");
+			}
 		}
 		//Check gang
 		Gang gatk = plugin.getGangController().getGang(atk.getUniqueId());
@@ -114,17 +191,20 @@ public class Listeners implements Listener{
 			if (gatk == gvic){
 				if (gatk.allowsFriendlyfire()){
 					//Allowed
-					return true;
 				}else{
 					//PVP off
+					if (cause == null){
+						cause = "GANG";
+					}
+					allow = false;
 				}
 			}else{
-				return true;
+				//allowed
 			}
 		}else{
-			return true;
+			//who cares
 		}
-		return false;
+		return new Result(allow, cause);
 	}
 	
 }

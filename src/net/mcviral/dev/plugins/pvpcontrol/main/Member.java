@@ -30,11 +30,18 @@ public class Member {
 		this.task = task;
 	}
 	
-	public boolean hasATaskRunningTask(){
+	public boolean hasATaskRunning(){
 		if (task != null){
 			return true;
 		}else{
 			return false;
+		}
+	}
+	
+	public void cancelTask(){
+		if (hasATaskRunning()){
+			task.cancel();
+			clearTask();
 		}
 	}
 	

@@ -117,12 +117,12 @@ public class PVPControl extends JavaPlugin{
 									return true;
 								}else{
 									//Change the state
-									if (m.hasATaskRunningTask()){
+									if (m.hasATaskRunning()){
 										//They're waiting for one.
 										sender.sendMessage(ChatColor.RED + "You're already turning pvp " + sstate + ", you can't change your mind now.");
 										return true;
 									}else{
-										PVPTask task = new PVPTask(m, state);
+										PVPTask task = new PVPTask(this, m, state);
 										m.setTask(task);
 										this.getServer().getScheduler().scheduleSyncDelayedTask(this, task, 20 * 30L);
 										sender.sendMessage(ChatColor.GREEN + "Your pvp will turn " + sstate + " in 30 seconds...");
