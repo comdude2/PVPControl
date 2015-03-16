@@ -27,7 +27,7 @@ public class PVPControl extends JavaPlugin{
 		listeners = new Listeners(this);
 		gangcontroller = new GangController(this);
 		pvpcontroller = new PVPController(this);
-		pointscontroller = new PointsController();
+		pointscontroller = new PointsController(this);
 		if (!loadedBefore){
 			this.getServer().getPluginManager().registerEvents(listeners, this);
 		}
