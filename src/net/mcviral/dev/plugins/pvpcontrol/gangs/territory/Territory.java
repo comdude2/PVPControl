@@ -1,11 +1,13 @@
 package net.mcviral.dev.plugins.pvpcontrol.gangs.territory;
 
+import net.mcviral.dev.plugins.pvpcontrol.gangs.Gang;
+
 public class Territory {
 	
 	private String name = null;
-	private String gangincontrol = null;
+	private Gang gangincontrol = null;
 	
-	public Territory(){
+	public Territory(String name, Gang gangincontrol){
 		
 	}
 
@@ -17,11 +19,11 @@ public class Territory {
 		this.name = name;
 	}
 
-	public String getGangincontrol() {
+	public Gang getGangInControl() {
 		return gangincontrol;
 	}
 
-	public void setGangincontrol(String gangincontrol) {
+	public void setGangInControl(Gang gangincontrol) {
 		this.gangincontrol = gangincontrol;
 	}
 	
