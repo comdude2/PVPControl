@@ -50,17 +50,24 @@ public class TerritoryCaptureTimer implements Runnable{
 					territory.setGangInControl(gang);
 				}else{
 					//announce problem
+					tc.announceError("ERROR: Gang is null");
 				}
 			}else if (mode == TimerMode.NEUTRALISE){
 				tc.broadcastNeutralise(territory);
 				territory.setGangInControl(null);
 			}else if (mode == TimerMode.STEALING){
 				if (gang != null){
-					//broadcast
-					tc.broadcastSteal(territory, gang, stealers);
-					territory.setGangInControl(gang);
+					if (stealers != null){
+						//broadcast
+						tc.broadcastSteal(territory, gang, stealers);
+						territory.setGangInControl(gang);
+					}else{
+						//announce problem
+						tc.announceError("ERROR: Stealers is null");
+					}
 				}else{
 					//announce problem
+					tc.announceError("ERROR: Gang is null");
 				}
 			}else{
 				//Er, wtf kind of mode did they use the timer for?

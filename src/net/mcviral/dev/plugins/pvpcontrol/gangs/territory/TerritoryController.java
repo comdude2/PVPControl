@@ -58,4 +58,8 @@ public class TerritoryController {
 		}
 	}
 	
+	public void announceError(String error){
+		plugin.log.severe(error);
+	}
+	
 }
