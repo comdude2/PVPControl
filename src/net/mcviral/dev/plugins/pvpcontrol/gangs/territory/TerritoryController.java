@@ -1,6 +1,7 @@
 package net.mcviral.dev.plugins.pvpcontrol.gangs.territory;
 
 import java.util.LinkedList;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
@@ -13,9 +14,30 @@ public class TerritoryController {
 	private PVPControl plugin = null;
 	private LinkedList <Territory> territories = new LinkedList <Territory> ();
 	private LinkedList <TerritoryCaptureTimer> timers = new LinkedList <TerritoryCaptureTimer> ();
+	private LinkedList <TerritoryCaptureCooldown> cooldowns = new LinkedList <TerritoryCaptureCooldown> ();
+	private LinkedList <UUID> capturebans = new LinkedList <UUID> ();
 	
 	public TerritoryController(PVPControl plugin){
 		this.plugin = plugin;
+	}
+	
+	public void captureTerritory(UUID uuid, Territory t, Gang g){
+		TerritoryCaptureTimer tct = new TerritoryCaptureTimer(this, TimerMode.CAPTURE, t, g);
+		timers.add(tct);
+		int id = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, tct, 0L);
+		tct.setId(id);
+		TerritoryCaptureCooldown tcc = new TerritoryCaptureCooldown(plugin, uuid);
+		cooldowns.add(tcc);
+		id = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, tcc, 0L);
+		tcc.setId(id);
+	}
+	
+	public void neutraliseTerritory(){
+		
+	}
+	
+	public void stealTerritory(){
+		
 	}
 	
 	public LinkedList <Territory> getTerritories() {
@@ -28,6 +50,12 @@ public class TerritoryController {
 	
 	public void cancelTimers(){
 		for (TerritoryCaptureTimer t : timers){
+			plugin.getServer().getScheduler().cancelTask(t.getId());
+		}
+	}
+	
+	public void cancelCooldowns(){
+		for (TerritoryCaptureCooldown t : cooldowns){
 			plugin.getServer().getScheduler().cancelTask(t.getId());
 		}
 	}
@@ -60,6 +88,10 @@ public class TerritoryController {
 	
 	public void announceError(String error){
 		plugin.log.severe(error);
+	}
+	
+	public LinkedList <UUID> getCaptureBans(){
+		return capturebans;
 	}
 	
 }

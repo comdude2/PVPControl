@@ -3,6 +3,7 @@ package net.mcviral.dev.plugins.pvpcontrol.main;
 import java.util.List;
 
 import net.mcviral.dev.plugins.pvpcontrol.gangs.GangController;
+import net.mcviral.dev.plugins.pvpcontrol.gangs.territory.TerritoryController;
 import net.mcviral.dev.plugins.pvpcontrol.points.PointsController;
 import net.mcviral.dev.plugins.pvpcontrol.pvp.PVPController;
 import net.mcviral.dev.plugins.pvpcontrol.pvp.PVPTask;
@@ -20,6 +21,7 @@ public class PVPControl extends JavaPlugin{
 	private GangController gangcontroller = null;
 	private PVPController pvpcontroller = null;
 	private PointsController pointscontroller = null;
+	private TerritoryController territorycontroller = null;
 	private boolean loadedBefore = false;
 	private Listeners listeners = null;
 	public boolean debug = true;
@@ -89,6 +91,10 @@ public class PVPControl extends JavaPlugin{
 	
 	public PointsController getPointsController(){
 		return pointscontroller;
+	}
+	
+	public TerritoryController getTerritoryController(){
+		return territorycontroller;
 	}
 	
 	@Override
