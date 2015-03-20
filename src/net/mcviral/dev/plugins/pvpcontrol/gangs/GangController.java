@@ -57,8 +57,9 @@ public class GangController {
 						}
 					}
 					boolean friendlyfire = fm.getYAML().getBoolean("gang.friendlyfire");
+					boolean joinable = fm.getYAML().getBoolean("gang.joinable");
 					if ((name != null) && (tag != null) && (leaderuuid != null) && (members != null)){
-						gangs.add(new Gang(name, tag, leaderuuid, members, friendlyfire));
+						gangs.add(new Gang(name, tag, leaderuuid, members, friendlyfire, joinable));
 						plugin.log.info("Gang loaded.");
 					}else{
 						//Problem
@@ -113,6 +114,7 @@ public class GangController {
 					fm.getYAML().set("gang.leaderuuid", g.getLeaderuuid());
 					fm.getYAML().set("gang.members", g.getMembers());
 					fm.getYAML().set("gang.friendlyfire", g.allowsFriendlyfire());
+					fm.getYAML().set("gang.joinable", g.isJoinable());
 					fm.saveYAML();
 				}else{
 					//Error

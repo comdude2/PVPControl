@@ -192,10 +192,10 @@ public class PVPControl extends JavaPlugin{
 				if (args.length == 1){
 					
 				}else{
-					helpPVP(sender);
+					helpPoints(sender);
 				}
 			}else{
-				helpPVP(sender);
+				helpPoints(sender);
 			}
 		}else{
 			sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");
@@ -207,12 +207,16 @@ public class PVPControl extends JavaPlugin{
 		if (sender.hasPermission("gang.use")){
 			if (args.length > 0){
 				if (args.length == 1){
-					
+					if (args[0].equalsIgnoreCase("leave")){
+						
+					}else{
+						helpGang(sender);
+					}
 				}else{
-					helpPVP(sender);
+					helpGang(sender);
 				}
 			}else{
-				helpPVP(sender);
+				helpGang(sender);
 			}
 		}else{
 			sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");

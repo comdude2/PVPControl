@@ -10,17 +10,19 @@ public class Gang {
 	private UUID leaderuuid = null;
 	private LinkedList <UUID> members = new LinkedList <UUID> ();
 	private boolean friendlyfire = true;
+	private boolean joinable = false;
 	
 	public Gang(){
 		
 	}
 	
-	public Gang(String name, String tag, UUID leaderuuid, LinkedList <UUID> members, boolean friendlyfire){
+	public Gang(String name, String tag, UUID leaderuuid, LinkedList <UUID> members, boolean friendlyfire, boolean joinable){
 		this.name = name;
 		this.tag = tag;
 		this.leaderuuid = leaderuuid;
 		this.members = members;
 		this.friendlyfire = friendlyfire;
+		this.joinable = joinable;
 	}
 
 	public String getName() {
@@ -61,6 +63,14 @@ public class Gang {
 
 	public void setFriendlyfire(boolean friendlyfire) {
 		this.friendlyfire = friendlyfire;
+	}
+	
+	public boolean isJoinable() {
+		return joinable;
+	}
+	
+	public void setJoinable(boolean joinable) {
+		this.joinable = joinable;
 	}
 	
 }
